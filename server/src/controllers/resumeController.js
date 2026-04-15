@@ -26,11 +26,11 @@ const uploadResume = async (req, res) => {
     const data = await pdf(req.file.buffer);
     const extractedText = data.text;
 
-    // Check if the extracted text is empty
-    if (!extractedText || extractedText.trim().length === 0) {
+    // Check if the extracted text is empty or too short
+    if (!extractedText || extractedText.trim().length < 50) {
       return res.status(400).json({
         success: false,
-        message: 'Could not extract text. The PDF might be scanned or image-based.'
+        message: 'PDF is not readable or not a valid resume.'
       });
     }
 

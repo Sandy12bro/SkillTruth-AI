@@ -8,8 +8,10 @@ import axios from 'axios';
 const Upload = () => {
   const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   
@@ -29,19 +31,21 @@ const Upload = () => {
 
   const validateAndSetFile = (selectedFile) => {
     setError(null);
+    setSuccess(null);
     if (!selectedFile) return;
     
-    if (selectedFile.type !== 'application/pdf') {
-      setError('Please upload a PDF file only.');
+    if (selectedFile.type !== 'application/pdf' || !selectedFile.name.toLowerCase().endsWith('.pdf')) {
+      setError('❌ Invalid file. Please upload a PDF resume.');
       return;
     }
     
-    if (selectedFile.size > 10 * 1024 * 1024) {
-      setError('File size exceeds 10MB limit.');
+    if (selectedFile.size > 5 * 1024 * 1024) {
+      setError('❌ Invalid file. File size exceeds 5MB limit.');
       return;
     }
     
     setFile(selectedFile);
+    setSuccess('✅ Valid resume detected. Ready for analysis.');
   };
 
   const handleDrop = (e) => {
@@ -64,6 +68,9 @@ const Upload = () => {
     setFile(null);
     setProgress(0);
     setIsComplete(false);
+    setError(null);
+    setSuccess(null);
+    setUploadStatus('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -75,6 +82,7 @@ const Upload = () => {
     setIsUploading(true);
     setProgress(10);
     setError(null);
+    setUploadStatus('Uploading resume...');
     
     try {
       // 1. Prepare file for backend Multer endpoint
@@ -97,6 +105,7 @@ const Upload = () => {
 
       // Simulate partial loading for UI smoothness
       setProgress(60);
+      setUploadStatus('Resume validated. Starting analysis...');
 
       // 3. Analyze Text via OpenAI
       const analyzeRes = await axios.post('http://localhost:5000/api/resume/analyze', { text: extractedText });
@@ -176,9 +185,11 @@ const Upload = () => {
                 className={`relative flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-3xl cursor-pointer transition-all duration-300
                   ${isDragging 
                     ? 'border-indigo-500 bg-indigo-500/5 shadow-[0_0_30px_rgba(99,102,241,0.2)]' 
-                    : file 
-                      ? 'border-emerald-500/50 bg-emerald-500/5' 
-                      : 'border-slate-300 dark:border-white/20 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-white/5'
+                    : error
+                      ? 'border-red-500/50 bg-red-500/5'
+                      : file 
+                        ? 'border-emerald-500/50 bg-emerald-500/5' 
+                        : 'border-slate-300 dark:border-white/20 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-white/5'
                   }
                 `}
               >
@@ -204,7 +215,7 @@ const Upload = () => {
                       or click to browse from your computer
                     </p>
                     <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
-                      Strictly PDF formats up to 10MB
+                      Strictly PDF formats up to 5MB
                     </p>
                     {error && (
                       <motion.p 
@@ -212,7 +223,7 @@ const Upload = () => {
                         animate={{ opacity: 1, mt: 16 }}
                         className="text-red-500 text-sm font-semibold flex items-center gap-2 bg-red-50 dark:bg-red-500/10 px-4 py-2 rounded-lg border border-red-200 dark:border-red-500/20"
                       >
-                        <X size={16} /> {error}
+                        {error}
                       </motion.p>
                     )}
                   </>
@@ -225,6 +236,15 @@ const Upload = () => {
                       <p className="font-bold text-slate-900 dark:text-white truncate max-w-[250px] sm:max-w-xs">{file.name}</p>
                       <p className="text-sm text-slate-500 dark:text-slate-400">{formatFileSize(file.size)}</p>
                     </div>
+                    {success && (
+                      <motion.p 
+                        initial={{ opacity: 0, mb: 0 }}
+                        animate={{ opacity: 1, mb: 32 }}
+                        className="text-emerald-600 dark:text-emerald-400 text-sm font-semibold flex items-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20"
+                      >
+                        {success}
+                      </motion.p>
+                    )}
                     
                     <div className="flex gap-4">
                       <Button variant="outline" onClick={removeFile} className="px-6 text-sm hover:!bg-red-50 dark:hover:!bg-red-500/10 hover:!text-red-500 dark:hover:!text-red-400 border-slate-300 dark:border-white/10">
@@ -250,7 +270,7 @@ const Upload = () => {
               className="p-16 flex flex-col items-center justify-center"
             >
                <Loader2 size={48} className="text-indigo-600 dark:text-indigo-400 animate-spin mb-6" />
-               <h3 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Analyzing Data...</h3>
+               <h3 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">{uploadStatus || 'Analyzing Data...'}</h3>
                <p className="text-slate-500 dark:text-slate-400 mb-8 text-center max-w-sm">
                  Extracting entities, checking integrity markers, and verifying timeline...
                </p>
