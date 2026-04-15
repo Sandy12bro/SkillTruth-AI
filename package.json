@@ -1,0 +1,21 @@
+{
+  "name": "skilltruth-ai",
+  "version": "1.0.0",
+  "description": "SkillTruth AI is an intelligent resume verification platform that analyzes skills, evaluates real knowledge through AI-driven interviews, and reveals the truth behind what candidates claim.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sandy12bro/SkillTruth-AI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Sandy12bro/SkillTruth-AI/issues"
+  },
+  "homepage": "https://github.com/Sandy12bro/SkillTruth-AI#readme"
+}
