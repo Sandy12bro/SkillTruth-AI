@@ -13,7 +13,7 @@ const ThemeToggle = () => {
         onClick={toggleTheme}
         className={`
           relative w-16 h-8 rounded-full transition-colors duration-500 flex items-center p-1
-          ${isDark ? 'bg-indigo-950/40 border border-indigo-500/20' : 'bg-amber-100 border border-amber-200'}
+          ${isDark ? 'bg-indigo-950/40 border border-indigo-500/20' : 'bg-amber-100/50 border border-amber-400/50'}
           shadow-inner overflow-hidden cursor-pointer group
         `}
         aria-label="Toggle Theme"

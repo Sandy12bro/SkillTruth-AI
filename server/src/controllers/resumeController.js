@@ -74,6 +74,7 @@ const analyzeResume = async (req, res) => {
     }
 
     console.log("🔥 CALLING AI FOR REAL-TIME ANALYSIS");
+    console.log(`Text Sample: ${text.substring(0, 100)}...`);
 
     const prompt = `
       You are an expert technical recruiter and AI integrity engine. 
@@ -81,7 +82,7 @@ const analyzeResume = async (req, res) => {
       
       BE CRITICAL: Identify actual skill levels (Beginner, Intermediate, Advanced) based on project complexity and tenure.
       
-      Text: "${text.substring(0, 15000)}"
+      Text: "${text.replace(/"/g, "'").substring(0, 15000)}"
 
       Response MUST be in this EXACT JSON format:
       {
@@ -100,16 +101,28 @@ const analyzeResume = async (req, res) => {
     `;
 
     const aiRes = await sendPrompt(prompt);
+    console.log("🤖 RAW AI RESPONSE RECEIVED:", aiRes.substring(0, 200) + "...");
     
-    // Clean markdown code blocks if present
-    const cleanJson = aiRes.replace(/```json|```|``json|``/g, "").trim();
+    // Improved JSON cleaning: find the first '{' and last '}'
+    let cleanJson = aiRes;
+    const firstBrace = aiRes.indexOf('{');
+    const lastBrace = aiRes.lastIndexOf('}');
+    
+    if (firstBrace !== -1 && lastBrace !== -1) {
+      cleanJson = aiRes.substring(firstBrace, lastBrace + 1);
+    }
+
+    // Secondary clean for markdown blocks
+    cleanJson = cleanJson.replace(/```json|```|``json|``|`/g, "").trim();
     
     let parsedData;
     try {
       parsedData = JSON.parse(cleanJson);
+      console.log("✅ JSON PARSED SUCCESSFULLY");
     } catch (parseErr) {
-      console.error("Failed to parse AI response:", aiRes);
-      throw new Error("AI returned an invalid data structure.");
+      console.error("❌ JSON PARSE FAILED");
+      console.error("Problematic AI output:", aiRes);
+      throw new Error(`AI data structural error: ${parseErr.message}`);
     }
 
     return res.json({
