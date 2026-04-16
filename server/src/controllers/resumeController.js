@@ -1,4 +1,5 @@
 const pdf = require('pdf-parse');
+const { sendPrompt } = require('../services/openaiService');
 
 /**
  * Handle Resume Upload and Text Extraction
@@ -54,8 +55,6 @@ const uploadResume = async (req, res) => {
   }
 };
 
-const { sendPrompt } = require('../services/openaiService');
-
 /**
  * Handle Resume Text Analysis via OpenAI
  * POST /api/resume/analyze
@@ -64,54 +63,47 @@ const analyzeResume = async (req, res) => {
   try {
     const { text } = req.body;
 
-    if (!text || text.trim().length === 0) {
-      return res.status(400).json({
+    console.log("🔥 ANALYSIS STARTED");
+    console.log("Text length:", text?.length);
+
+    if (!text || text.length < 50) {
+      return res.json({
         success: false,
-        message: 'No resume text provided for analysis.'
+        message: "Resume content is too short or invalid",
       });
     }
 
-    const prompt = `
-You are an expert technical AI recruiter. Analyze the following resume text and extract the core capabilities into a STRICT JSON object. Do not wrap the JSON in markdown code blocks. Just output valid JSON.
-The JSON must follow this exact structure:
-{
-  "skills": ["skill1", "skill2"],
-  "projects": [{"title": "Project Name", "description": "Project overview"}],
-  "experience": [{"role": "Job Title", "duration": "Duration in months or years", "details": "Brief description"}]
-}
+    console.log("🔥 FORCE TEST RUN - Bypassing OpenAI");
 
-Resume Text:
-${text}
-`;
+    const forceData = {
+      skills: [
+        { name: "React", level: "Intermediate", confidence: 80 },
+        { name: "Node.js", level: "Intermediate", confidence: 75 },
+        { name: "OpenAI Integration", level: "Advanced", confidence: 95 }
+      ],
+      projects: [
+        {
+          name: "SkillTruth AI (FORCE TEST)",
+          description: "This is hardcoded data to verify the frontend pipeline is working correctly. If you see this, the AI integration is your broken link.",
+          technologies: ["React", "Node", "OpenAI"],
+          complexity: "High"
+        }
+      ],
+      experienceSummary: "Full-stack developer with AI experience - Verified via Force Test Bypass.",
+      strengths: ["Clean Architecture", "Precision Logic", "Diagnostic Thinking"],
+      weaknesses: ["AI Pipeline Instability (Currently Investigating)"]
+    };
 
-    // Send prompt to OpenAI
-    const aiResponse = await sendPrompt(prompt);
-
-    // Parse the JSON safely
-    let structuredData;
-    try {
-      // In case the model still outputs markdown blocks, strip them safely
-      const cleanJsonStr = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-      structuredData = JSON.parse(cleanJsonStr);
-    } catch (parseError) {
-      console.error('Failed to parse AI output as JSON:', aiResponse);
-      return res.status(500).json({
-        success: false,
-        message: 'OpenAI returned a response that could not be parsed as JSON.'
-      });
-    }
-
-    return res.status(200).json({
+    return res.json({
       success: true,
-      message: 'Resume analyzed successfully.',
-      data: structuredData
+      data: forceData
     });
 
   } catch (error) {
-    console.error('Error analyzing resume:', error);
-    return res.status(500).json({
+    console.error("❌ Critical Analysis Error:", error);
+    res.status(500).json({
       success: false,
-      message: 'An error occurred during AI analysis.',
+      message: "An internal error occurred during analysis.",
       error: error.message
     });
   }

@@ -4,6 +4,7 @@ import Button from '../components/ui/Button';
 import { Send, Bot, User, CheckCircle2, Loader2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useFlow } from '../context/FlowContext';
 
 const FALLBACK_QUESTIONS = [
   "Hello! I'm the SkillTruth AI. I've analyzed your credentials and I'd like to ask you a few questions. First, tell me about a time you resolved a major conflict while implementing a new architecture.",
@@ -16,7 +17,8 @@ const FALLBACK_QUESTIONS = [
 const Interview = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const resultData = location.state?.resultData || {}; // Extract injected skills
+  const { flowState, updateFlowState } = useFlow();
+  const resultData = flowState.analysisData || {}; // Use global flow state data
 
   const [questions, setQuestions] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -100,12 +102,13 @@ const Interview = () => {
         // Proceed to next question after short delay
         setTimeout(() => {
            const nextIndex = questionIndex + 1;
-           if (nextIndex < questions.length) {
+          if (nextIndex < questions.length) {
              const newAIMsg = { id: Date.now() + 2, text: questions[nextIndex], sender: 'ai' };
              setMessages(prev => [...prev, newAIMsg]);
              setQuestionIndex(nextIndex);
            } else {
              setIsCompleted(true);
+             updateFlowState({ interviewCompleted: true });
            }
         }, 1500);
 
@@ -121,6 +124,7 @@ const Interview = () => {
         setQuestionIndex(nextIndex);
       } else {
         setIsCompleted(true);
+        updateFlowState({ interviewCompleted: true });
       }
     }
   };

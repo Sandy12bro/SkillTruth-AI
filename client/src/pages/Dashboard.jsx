@@ -3,26 +3,33 @@ import { motion } from 'framer-motion';
 import Card from '../components/ui/Card';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { CheckCircle, AlertTriangle, Info, ShieldCheck } from 'lucide-react';
+import { useFlow } from '../context/FlowContext';
 
 const Dashboard = () => {
-  // Mock Data for Recharts
-  const skillData = [
-    { subject: 'React/UI', A: 95, fullMark: 100 },
-    { subject: 'System Design', A: 85, fullMark: 100 },
-    { subject: 'Node.js', A: 90, fullMark: 100 },
-    { subject: 'AWS', A: 65, fullMark: 100 },
-    { subject: 'Leadership', A: 70, fullMark: 100 },
-    { subject: 'Security', A: 80, fullMark: 100 },
+  const { flowState } = useFlow();
+  const resultData = flowState.analysisData || {};
+
+  // Map Real Skills Data to Recharts
+  const skillData = (resultData.skills || []).map(s => ({
+    subject: s.name,
+    A: s.confidence || 70,
+    fullMark: 100
+  })).slice(0, 6); // Limit to top 6 for the radar chart
+
+  // Fallback if no skills
+  const displaySkillData = skillData.length > 0 ? skillData : [
+    { subject: 'Technical', A: 50, fullMark: 100 },
+    { subject: 'Leadership', A: 50, fullMark: 100 },
+    { subject: 'Architecture', A: 50, fullMark: 100 },
   ];
 
-  const tenureData = [
-    { name: 'Senior Dev (Corp A)', Claimed: 36, Verified: 36 },
-    { name: 'Lead Eng (Corp B)', Claimed: 24, Verified: 18 },
-    { name: 'Backend Dev (Corp C)', Claimed: 12, Verified: 12 },
-  ];
-
-  // Circular Progress Calculation
-  const truthScore = 87;
+  // Calculate Truth Score based on average confidence and interview completion
+  const avgConfidence = skillData.length > 0 
+    ? skillData.reduce((acc, s) => acc + s.A, 0) / skillData.length 
+    : 70;
+  
+  const truthScore = Math.round(flowState.interviewCompleted ? avgConfidence : avgConfidence * 0.8);
+  
   const radius = 60;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (truthScore / 100) * circumference;
@@ -78,7 +85,7 @@ const Dashboard = () => {
           <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Semantic Skill Map</h2>
           <div className="flex-1 min-h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={skillData}>
+              <RadarChart cx="50%" cy="50%" outerRadius="80%" data={displaySkillData}>
                 <PolarGrid stroke="#94a3b8" strokeOpacity={0.3} />
                 <PolarAngleAxis dataKey="subject" className="text-xs font-bold fill-slate-600 dark:fill-slate-400" />
                 <PolarRadiusAxis angle={30} domain={[0, 100]} className="text-xs fill-slate-400" />
@@ -89,25 +96,17 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* MIDDLE SECTION: Secondary Graphs - Bar Chart for Tenure */}
+      {/* MIDDLE SECTION: Experience Summary Insights */}
       <div className="mb-8">
-        <Card className="p-6">
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Tenure Verification Analysis (Months)</h2>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={tenureData}
-                margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" strokeOpacity={0.2} />
-                <XAxis dataKey="name" className="text-xs font-medium fill-slate-600 dark:fill-slate-400" />
-                <YAxis className="text-xs font-medium fill-slate-600 dark:fill-slate-400" />
-                <RechartsTooltip cursor={{fill: 'rgba(99, 102, 241, 0.05)'}} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', backgroundColor: 'rgba(255, 255, 255, 0.9)' }} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', fontWeight: 'bold' }} />
-                <Bar dataKey="Claimed" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Verified" fill="#4f46e5" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        <Card className="p-8 bg-indigo-600 text-white border-none relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+          <div className="relative z-10">
+            <h2 className="text-xl font-black mb-4 flex items-center gap-2">
+              <Info size={24} /> Experience Trajectory Analysis
+            </h2>
+            <p className="text-indigo-100 leading-relaxed text-lg italic">
+              "{resultData.experienceSummary || "Analysis of professional history pending..."}"
+            </p>
           </div>
         </Card>
       </div>
@@ -116,55 +115,36 @@ const Dashboard = () => {
       <div>
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-6 pl-2">Project Granularity</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          
-          <Card className="hover:border-emerald-300 dark:hover:border-emerald-500/50 group">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="p-3 bg-emerald-100 dark:bg-emerald-500/10 rounded-xl text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform">
-                <CheckCircle size={24} />
+          {resultData.projects?.map((proj, idx) => (
+            <Card key={idx} className="hover:border-indigo-300 dark:hover:border-indigo-500/50 group">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="p-3 bg-indigo-100 dark:bg-indigo-500/10 rounded-xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
+                  <CheckCircle size={24} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 dark:text-white">{proj.name}</h3>
+                  <p className="text-xs font-medium text-indigo-600 dark:text-indigo-500 uppercase tracking-widest mt-1">
+                    Complexity: {proj.complexity}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-slate-900 dark:text-white">E-Commerce Platform Redesign</h3>
-                <p className="text-xs font-medium text-emerald-600 dark:text-emerald-500 uppercase tracking-widest mt-1">Status: Confirmed</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5">
+                {proj.description}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {proj.technologies?.map((tech, tIdx) => (
+                  <span key={tIdx} className="text-[10px] px-2 py-0.5 bg-slate-200/50 dark:bg-white/10 rounded text-slate-500 dark:text-slate-400">
+                    {tech}
+                  </span>
+                ))}
               </div>
+            </Card>
+          ))}
+          {!resultData.projects?.length && (
+            <div className="col-span-full text-center py-10 text-slate-400 italic">
+              No project granularity analysis available.
             </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5">
-              The technical footprint aligns flawlessly with claimed Next.js and Tailwind usage. 
-              Repository commit velocity and standard API references were successfully verified.
-            </p>
-          </Card>
-
-          <Card className="hover:border-amber-300 dark:hover:border-amber-500/50 group">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="p-3 bg-amber-100 dark:bg-amber-500/10 rounded-xl text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform">
-                <AlertTriangle size={24} />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 dark:text-white">GraphQL Implementation</h3>
-                <p className="text-xs font-medium text-amber-600 dark:text-amber-500 uppercase tracking-widest mt-1">Status: Partial Evidence</p>
-              </div>
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5">
-              While GraphQL usage is present, the complexity suggests secondary involvement rather than principal architecture. 
-              We recommend validating specific query optimization techniques in technical screening.
-            </p>
-          </Card>
-
-          <Card className="hover:border-indigo-300 dark:hover:border-indigo-500/50 group">
-            <div className="flex items-start gap-4 mb-4">
-              <div className="p-3 bg-indigo-100 dark:bg-indigo-500/10 rounded-xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
-                <Info size={24} />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 dark:text-white">AWS Infrastructure Scaling</h3>
-                <p className="text-xs font-medium text-indigo-600 dark:text-indigo-500 uppercase tracking-widest mt-1">Status: Unverified Deep Tech</p>
-              </div>
-            </div>
-            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed bg-slate-50 dark:bg-white/5 p-4 rounded-xl border border-slate-100 dark:border-white/5">
-              Candidate claims to have led the Dockerization and ECS cluster scaling, but public evidence primarily reflects standard EC2 maintenance. 
-              Needs behavioral deep-dive.
-            </p>
-          </Card>
-
+          )}
         </div>
       </div>
 

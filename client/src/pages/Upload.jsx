@@ -4,6 +4,7 @@ import Button from '../components/ui/Button';
 import { Upload as UploadIcon, FileText, CheckCircle, X, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useFlow } from '../context/FlowContext';
 
 const Upload = () => {
   const [file, setFile] = useState(null);
@@ -17,6 +18,7 @@ const Upload = () => {
   
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const { updateFlowState } = useFlow();
 
   // Handle Drag & Drop Events
   const handleDragOver = (e) => {
@@ -83,6 +85,7 @@ const Upload = () => {
     setProgress(10);
     setError(null);
     setUploadStatus('Uploading resume...');
+    console.log('Starting upload for file:', file.name);
     
     try {
       // 1. Prepare file for backend Multer endpoint
@@ -105,24 +108,41 @@ const Upload = () => {
 
       // Simulate partial loading for UI smoothness
       setProgress(60);
-      setUploadStatus('Resume validated. Starting analysis...');
+      setUploadStatus('Resume received. Initializing deep analysis...');
 
-      // 3. Analyze Text via OpenAI
+      // 3. Analyze Text via OpenAI (Bypass active in backend)
       const analyzeRes = await axios.post('http://localhost:5000/api/resume/analyze', { text: extractedText });
       
-      const structuredData = analyzeRes.data?.data;
-      if (!structuredData) {
-        throw new Error("Failed to generate analytical data.");
+      console.log("🔍 FORCE TEST - RAW RESPONSE:", analyzeRes.data);
+      
+      if (analyzeRes.data.success) {
+        const structuredData = analyzeRes.data.data;
+        console.log("🔍 FORCE TEST - EXTRACTED DATA:", structuredData);
+
+        if (!structuredData || !structuredData.skills) {
+          console.error("❌ FORCE TEST FAILURE - Data received but malformed:", structuredData);
+          throw new Error("Force Test bypass failed: Received empty data object.");
+        }
+        
+        setProgress(100);
+        setIsUploading(false);
+        setIsComplete(true);
+        
+        updateFlowState({ 
+          resumeUploaded: true, 
+          analysisData: structuredData,
+          analysisCompleted: false
+        });
+
+        console.log("🚀 MAPPING SUCCESS - Transitioning to /analysis");
+        setTimeout(() => {
+          navigate('/analysis', { state: { resultData: structuredData } });
+        }, 1500);
+
+      } else {
+        console.error("❌ FORCE TEST FAILURE - Backend returned success: false:", analyzeRes.data.message);
+        throw new Error(analyzeRes.data.message || "AI Analysis failed to produce valid results.");
       }
-
-      setProgress(100);
-      setIsUploading(false);
-      setIsComplete(true);
-
-      // Wait a moment so user sees the 100% checkmark, then pass the data to /analysis
-      setTimeout(() => {
-        navigate('/analysis', { state: { resultData: structuredData } });
-      }, 1500);
 
     } catch (err) {
       console.error(err);
@@ -168,100 +188,38 @@ const Upload = () => {
         className="w-full glass-card overflow-hidden shadow-2xl relative"
       >
         <AnimatePresence mode="wait">
-          {/* STATE 1: Not Uploaded or Dragging */}
-          {!isComplete && !isUploading && (
+          {isComplete ? (
             <motion.div
-              key="upload-zone"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, scale: 0.98 }}
-              className={`p-10 transition-colors duration-300 ${isDragging ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : ''}`}
+              key="complete-state"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="p-16 flex flex-col items-center justify-center"
             >
-              <div 
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => !file && fileInputRef.current?.click()}
-                className={`relative flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-3xl cursor-pointer transition-all duration-300
-                  ${isDragging 
-                    ? 'border-indigo-500 bg-indigo-500/5 shadow-[0_0_30px_rgba(99,102,241,0.2)]' 
-                    : error
-                      ? 'border-red-500/50 bg-red-500/5'
-                      : file 
-                        ? 'border-emerald-500/50 bg-emerald-500/5' 
-                        : 'border-slate-300 dark:border-white/20 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-white/5'
-                  }
-                `}
-              >
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleFileChange} 
-                  accept="application/pdf"
-                  className="hidden" 
-                />
-
-                {!file ? (
-                  <>
-                    <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-colors duration-300
-                      ${isDragging ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'}
-                    `}>
-                      <UploadIcon size={32} />
-                    </div>
-                    <h3 className="text-xl font-bold mb-2 text-slate-800 dark:text-white">
-                      Drag & Drop your resume here
-                    </h3>
-                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">
-                      or click to browse from your computer
-                    </p>
-                    <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
-                      Strictly PDF formats up to 5MB
-                    </p>
-                    {error && (
-                      <motion.p 
-                        initial={{ opacity: 0, mt: 0 }}
-                        animate={{ opacity: 1, mt: 16 }}
-                        className="text-red-500 text-sm font-semibold flex items-center gap-2 bg-red-50 dark:bg-red-500/10 px-4 py-2 rounded-lg border border-red-200 dark:border-red-500/20"
-                      >
-                        {error}
-                      </motion.p>
-                    )}
-                  </>
-                ) : (
-                  <div className="flex flex-col items-center w-full max-w-md mx-auto" onClick={(e) => e.stopPropagation()}>
-                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mb-6 text-emerald-600 dark:text-emerald-400">
-                      <FileText size={32} />
-                    </div>
-                    <div className="text-center mb-8">
-                      <p className="font-bold text-slate-900 dark:text-white truncate max-w-[250px] sm:max-w-xs">{file.name}</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">{formatFileSize(file.size)}</p>
-                    </div>
-                    {success && (
-                      <motion.p 
-                        initial={{ opacity: 0, mb: 0 }}
-                        animate={{ opacity: 1, mb: 32 }}
-                        className="text-emerald-600 dark:text-emerald-400 text-sm font-semibold flex items-center gap-2 bg-emerald-50 dark:bg-emerald-500/10 px-4 py-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20"
-                      >
-                        {success}
-                      </motion.p>
-                    )}
-                    
-                    <div className="flex gap-4">
-                      <Button variant="outline" onClick={removeFile} className="px-6 text-sm hover:!bg-red-50 dark:hover:!bg-red-500/10 hover:!text-red-500 dark:hover:!text-red-400 border-slate-300 dark:border-white/10">
-                        Cancel
-                      </Button>
-                      <Button variant="primary" onClick={handleUpload} disabled={isUploading} className="px-8 shadow-indigo-500/25 shadow-xl">
-                        Start Analysis
-                      </Button>
-                    </div>
-                  </div>
-                )}
+              <div className="w-24 h-24 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mb-6 text-emerald-600 dark:text-emerald-400 relative">
+                <motion.div 
+                  initial={{ scale: 0 }} 
+                  animate={{ scale: 1 }} 
+                  transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+                >
+                  <CheckCircle size={48} />
+                </motion.div>
+                <span className="absolute inset-0 rounded-full border-4 border-emerald-500/30 animate-ping"></span>
               </div>
+              <h3 className="text-3xl font-bold mb-3 text-slate-900 dark:text-white">Analysis Ready</h3>
+              <p className="text-slate-600 dark:text-slate-400 mb-8 text-center max-w-sm">
+                We've successfully processed your document and identified key verification points.
+              </p>
+              
+              <Button 
+                variant="neon" 
+                onClick={() => navigate('/analysis')}
+                className="px-10 py-4 shadow-emerald-500/20 !border-emerald-500 !text-emerald-600 dark:!text-emerald-400"
+              >
+                View Full Report
+              </Button>
             </motion.div>
-          )}
-
-          {/* STATE 2: Uploading Progress */}
-          {isUploading && (
+          ) : isUploading ? (
             <motion.div
               key="uploading-state"
               initial={{ opacity: 0, y: 20 }}
@@ -286,49 +244,126 @@ const Upload = () => {
                      animate={{ width: `${progress}%` }}
                      className="h-full bg-indigo-600 dark:bg-indigo-500 rounded-full relative overflow-hidden"
                    >
-                     {/* Shimmer effect inside progress bar */}
                      <div className="absolute top-0 left-0 bottom-0 w-[50px] bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-[50px] animate-[shimmer_1.5s_infinite]" />
                    </motion.div>
                  </div>
                </div>
             </motion.div>
-          )}
-
-          {/* STATE 3: Upload Complete */}
-          {isComplete && (
+          ) : (
             <motion.div
-              key="complete-state"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="p-16 flex flex-col items-center justify-center"
+              key="upload-zone"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              className={`p-10 transition-colors duration-300 ${isDragging ? 'bg-indigo-50/50 dark:bg-indigo-900/20' : ''}`}
             >
-              <div className="w-24 h-24 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mb-6 text-emerald-600 dark:text-emerald-400 relative">
-                <motion.div 
-                  initial={{ scale: 0 }} 
-                  animate={{ scale: 1 }} 
-                  transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-                >
-                  <CheckCircle size={48} />
-                </motion.div>
-                {/* Ping animation behind the checkmark */}
-                <span className="absolute inset-0 rounded-full border-4 border-emerald-500/30 animate-ping"></span>
-              </div>
-              <h3 className="text-3xl font-bold mb-3 text-slate-900 dark:text-white">Analysis Ready</h3>
-              <p className="text-slate-600 dark:text-slate-400 mb-8 text-center max-w-sm">
-                We've successfully processed your document and identified key verification points.
-              </p>
-              
-              <Button 
-                variant="neon" 
-                onClick={() => navigate('/analysis')}
-                className="px-10 py-4 shadow-emerald-500/20 !border-emerald-500 !text-emerald-600 dark:!text-emerald-400"
+              <div
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                onClick={() => !file && fileInputRef.current?.click()}
+                className={`relative flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-3xl cursor-pointer transition-all duration-300 ${
+                  isDragging
+                    ? 'border-indigo-500 bg-indigo-500/5 shadow-[0_0_30px_rgba(99,102,241,0.2)]'
+                    : error
+                    ? 'border-red-500/50 bg-red-500/5'
+                    : file
+                    ? 'border-emerald-500/50 bg-emerald-500/5 shadow-[0_0_30px_rgba(16,185,129,0.1)]'
+                    : 'border-slate-300 dark:border-white/20 hover:border-indigo-400 dark:hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-white/5'
+                }`}
               >
-                View Full Report
-              </Button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  accept="application/pdf"
+                  className="hidden"
+                />
+
+                {!file ? (
+                  <>
+                    <div
+                      className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-colors duration-300 ${
+                        isDragging
+                          ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400'
+                          : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'
+                      }`}
+                    >
+                      <UploadIcon size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2 text-slate-800 dark:text-white">
+                      Drag & Drop your resume here
+                    </h3>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm mb-2">
+                      or click to browse from your computer
+                    </p>
+                    <p className="text-xs text-slate-400 dark:text-slate-500 font-mono">
+                      Strictly PDF formats up to 5MB
+                    </p>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center w-full max-w-md mx-auto" onClick={(e) => e.stopPropagation()}>
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mb-6 text-emerald-600 dark:text-emerald-400">
+                      <FileText size={32} />
+                    </div>
+                    <div className="text-center mb-8">
+                      <p className="font-bold text-slate-900 dark:text-white truncate max-w-[250px] sm:max-w-xs">{file.name}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{formatFileSize(file.size)}</p>
+                    </div>
+
+                    <div className="flex gap-4">
+                      <Button
+                        variant="outline"
+                        onClick={removeFile}
+                        className="px-6 text-sm hover:!bg-red-50 dark:hover:!bg-red-500/10 hover:!text-red-500 dark:hover:!text-red-400 border-slate-300 dark:border-white/10"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        variant="primary" 
+                        onClick={handleUpload} 
+                        disabled={isUploading} 
+                        className="px-8 shadow-indigo-500/25 shadow-xl"
+                      >
+                        Start Analysis
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* External Feedback Messages Container */}
+      <div className="w-full max-w-xl mx-auto mt-8 h-20">
+        <AnimatePresence mode="wait">
+          {error && (
+            <motion.div
+              key="error-msg"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="glass-card !bg-red-500/5 border-red-500/20 p-4 flex items-center justify-center gap-3"
+            >
+              <X size={20} className="text-red-500" />
+              <p className="text-red-500 font-semibold">{error}</p>
+            </motion.div>
+          )}
+          {success && !isUploading && !isComplete && (
+            <motion.div
+              key="success-msg"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="glass-card !bg-emerald-500/5 border-emerald-500/20 p-4 flex items-center justify-center gap-3 text-emerald-600 dark:text-emerald-400 font-semibold"
+            >
+              {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };

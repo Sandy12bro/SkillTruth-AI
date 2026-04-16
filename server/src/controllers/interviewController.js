@@ -31,14 +31,18 @@ Example format:
     `;
 
     const aiResponse = await sendPrompt(prompt);
+    console.log("RAW INTERVIEW QUESTIONS:", aiResponse);
 
     let questions;
     try {
-      const cleanJsonStr = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-      questions = JSON.parse(cleanJsonStr);
+      const cleaned = aiResponse.replace(/```json|```|``json|``/g, "").trim();
+      questions = JSON.parse(cleaned);
+      
+      if (!Array.isArray(questions)) throw new Error("Result is not an array");
+      
+      console.log("✅ PARSED QUESTIONS:", questions);
     } catch (parseError) {
-      console.error('Failed to parse AI output as JSON:', aiResponse);
-      // Fallback
+      console.error('❌ Failed to parse AI questions:', aiResponse);
       questions = [
         "Tell me about your most challenging technical project.",
         "How do you handle system failures in production?",
@@ -101,7 +105,7 @@ Example format:
 
     let parsedQuestions;
     try {
-      const cleanJsonStr = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+      const cleanJsonStr = aiResponse.replace(/```json|```|``json|``/g, '').trim();
       parsedQuestions = JSON.parse(cleanJsonStr);
     } catch (parseError) {
       console.error('Failed to parse AI output as JSON:', aiResponse);
@@ -148,24 +152,28 @@ Candidate Answer: "${answer}"
 Provide a constructive evaluation of their answer.
 Return your response STRICTLY as a JSON object with this shape, no markdown blocks:
 {
-  "score": "A number between 1 and 10 grading their technical depth and accuracy",
-  "feedback": "Constructive feedback on their answer, detailing what was good and what could be improved",
-  "authenticity": "A brief assessment (e.g., 'High', 'Medium', 'Low') on whether the answer sounds genuine or potentially AI-generated/memorized, along with a short reason."
+  "score": 1-10,
+  "feedback": "Constructive feedback on their answer",
+  "authenticity": "High | Medium | Low",
+  "interviewerResponse": "A conversational follow-up or transition to say to the candidate (e.g. 'That is a solid approach to concurrency. Let us move to your project architecture.')"
 }
     `;
 
     const aiResponse = await sendPrompt(prompt);
+    console.log("RAW EVALUATION:", aiResponse);
 
     let evaluation;
     try {
-      const cleanJsonStr = aiResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-      evaluation = JSON.parse(cleanJsonStr);
+      const cleaned = aiResponse.replace(/```json|```|``json|``/g, "").trim();
+      evaluation = JSON.parse(cleaned);
+      console.log("✅ PARSED EVALUATION:", evaluation);
     } catch (parseError) {
-      console.error('Failed to parse AI evaluation JSON:', aiResponse);
+      console.error('❌ Failed to parse AI evaluation JSON:', aiResponse);
       evaluation = {
         score: 5,
         feedback: "We could not fully process your answer. Please ensure you are providing detailed technical responses.",
-        authenticity: "Unknown - System parsing error occurred."
+        authenticity: "Unknown",
+        interviewerResponse: "Thank you for that answer. Let's continue."
       };
     }
 
