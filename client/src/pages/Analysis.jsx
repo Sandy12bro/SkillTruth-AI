@@ -229,16 +229,16 @@ const Analysis = () => {
                   )}
                 </div>
 
-                <Card className="bg-indigo-600 dark:bg-indigo-600/20 text-white border-none relative overflow-hidden group shadow-indigo-500/20">
-                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+                <Card className="bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-500/20 relative overflow-hidden group shadow-indigo-500/10">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 dark:opacity-5 group-hover:scale-110 transition-transform text-indigo-600 dark:text-indigo-500">
                     <ShieldCheck size={120} />
                   </div>
                   <div className="relative z-10">
-                    <h3 className="intelligence-header !text-white">
-                      <ShieldCheck className="text-emerald-400" />
+                    <h3 className="intelligence-header !text-indigo-900 dark:!text-indigo-100">
+                      <ShieldCheck className="text-indigo-600 dark:text-emerald-400" />
                       Experience Summary
                     </h3>
-                    <p className="text-sm text-indigo-50 leading-relaxed italic">
+                    <p className="text-sm text-indigo-800 dark:text-indigo-50 leading-relaxed italic">
                       "{resultData?.experienceSummary}"
                     </p>
                   </div>
