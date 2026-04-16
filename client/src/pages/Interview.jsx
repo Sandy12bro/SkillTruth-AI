@@ -5,6 +5,7 @@ import { Send, Bot, User, CheckCircle2, Loader2 } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useFlow } from '../context/FlowContext';
+import API_BASE_URL from '../config/api';
 
 const FALLBACK_QUESTIONS = [
   "Hello! I'm the SkillTruth AI. I've analyzed your credentials and I'd like to ask you a few questions. First, tell me about a time you resolved a major conflict while implementing a new architecture.",
@@ -44,7 +45,7 @@ const Interview = () => {
     let mounted = true;
     const fetchQuestions = async () => {
       try {
-        const res = await axios.post('http://localhost:5000/api/interview/generate', {
+        const res = await axios.post(`${API_BASE_URL}/api/interview/generate`, {
           skills: resultData.skills || ['React', 'Node.js'],
           projects: resultData.projects || []
         });
@@ -84,7 +85,7 @@ const Interview = () => {
 
     try {
       // 2. Evaluate User Answer via API
-      const evalRes = await axios.post('http://localhost:5000/api/interview/evaluate', {
+      const evalRes = await axios.post(`${API_BASE_URL}/api/interview/evaluate`, {
         question: currentQuestion,
         answer: userText
       });

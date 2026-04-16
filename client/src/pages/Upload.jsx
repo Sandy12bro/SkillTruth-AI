@@ -5,6 +5,7 @@ import { Upload as UploadIcon, FileText, CheckCircle, X, Loader2 } from 'lucide-
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useFlow } from '../context/FlowContext';
+import API_BASE_URL from '../config/api';
 
 const Upload = () => {
   const [file, setFile] = useState(null);
@@ -93,7 +94,7 @@ const Upload = () => {
       formData.append('resume', file);
 
       // 2. Upload and Extract Text
-      const uploadRes = await axios.post('http://localhost:5000/api/resume/upload', formData, {
+      const uploadRes = await axios.post(`${API_BASE_URL}/api/resume/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 50) / progressEvent.total);
@@ -111,7 +112,7 @@ const Upload = () => {
       setUploadStatus('Resume received. Initializing deep analysis...');
 
       // 3. Analyze Text via OpenAI (Bypass active in backend)
-      const analyzeRes = await axios.post('http://localhost:5000/api/resume/analyze', { text: extractedText });
+      const analyzeRes = await axios.post(`${API_BASE_URL}/api/resume/analyze`, { text: extractedText });
       
       console.log("🔍 FORCE TEST - RAW RESPONSE:", analyzeRes.data);
       
