@@ -152,59 +152,91 @@ const generateSimulatedEvaluation = (answer) => {
 };
 
 /**
- * Evaluate User Answer
- * POST /api/interview/evaluate
+ * Handle Dynamic Interview Chat Loop
+ * POST /api/interview/chat
  */
-const evaluateAnswer = async (req, res) => {
+const chatInterview = async (req, res) => {
   try {
-    const { question, answer } = req.body;
+    const { history, resumeData } = req.body;
 
-    if (!question || !answer) {
-      return res.status(400).json({ success: false, message: 'Question and answer are required.' });
+    if (!history || !resumeData) {
+      return res.status(400).json({ success: false, message: 'History and resume context are required.' });
     }
 
     try {
       const prompt = `
-        You are evaluating a candidate's response to an interview question.
-        Question: "${question}"
-        Candidate Answer: "${answer}"
+        You are a BRUTALLY RIGOROUS AI Technical Recruiter. Your mission is to verify the candidate's absolute truth.
         
-        Provide a constructive evaluation of their answer.
-        Return your response STRICTLY as a JSON object with this shape, no markdown blocks:
+        CONTEXT:
+        ${JSON.stringify(resumeData)}
+
+        CONVERSATION HISTORY:
+        ${JSON.stringify(history)}
+
+        RULES:
+        1. If the candidate is vague, DRILL DEEPER into specifics (architectural choices, specific libraries, edge cases).
+        2. Once you verify basic knowledge, ask for CODE LOGIC or PSEUDO-CODE for a specific feature on their resume.
+        3. Transition naturally between topics (e.g., from DB to Frontend).
+        4. If you have a clear picture of their level (6-8 total messages usually), set "isCompleted": true.
+        5. Be conversational but firm. No generic behavioral talk.
+
+        RESPONSE FORMAT (STRICT JSON):
         {
-          "score": 1-10,
-          "feedback": "Feedback string",
-          "authenticity": "High|Medium|Low",
-          "interviewerResponse": "Conversational follow-up"
+          "nextQuestion": "The next question/probing point",
+          "evaluation": "Small internal note on their last answer",
+          "isCompleted": false
         }
       `;
 
       const aiResponse = await sendPrompt(prompt);
       const cleaned = aiResponse.replace(/```json|```|``json|``/g, "").trim();
-      const evaluation = JSON.parse(cleaned);
-      
-      return res.status(200).json({ success: true, data: evaluation });
+      const parsed = JSON.parse(cleaned);
+
+      return res.status(200).json({ success: true, data: parsed });
 
     } catch (aiErr) {
+      // Simulation Fallback for Chat
       if (aiErr.message.includes('429') || aiErr.message.includes('quota') || aiErr.message.includes('billing')) {
-        console.warn("⚠️ EVALUATION QUOTA REACHED - ACTIVATING NEURAL SIMULATION");
-        const evaluation = generateSimulatedEvaluation(answer);
+        const messageCount = history.filter(m => m.sender === 'user').length;
+        const skills = resumeData.skills || [];
+        const projects = resumeData.projects || [];
+
+        let nextQuestion = "";
+        let isCompleted = false;
+
+        if (messageCount === 0) {
+          nextQuestion = `I see you have experience with ${skills[0]?.name || 'modern tech'}. Can you explain the most complex logic block you've written for it recently?`;
+        } else if (messageCount === 1) {
+          nextQuestion = `Regarding your project "${projects[0]?.name || 'Main Case'}", how did you handle state synchronization or data consistency? Be specific about the architecture.`;
+        } else if (messageCount === 2) {
+          nextQuestion = `Let's talk code. If you had to implement a retry-mechanism for an API call in ${skills[1]?.name || 'your core stack'}, what would the logic structure look like?`;
+        } else if (messageCount === 3) {
+          nextQuestion = `Final technical hurdle: How would you scale your current project architecture to handle 10x the traffic? What breaks first?`;
+        } else {
+          nextQuestion = "Thank you for the detailed insights. I've seen enough to form a proficiency report.";
+          isCompleted = true;
+        }
+
         return res.status(200).json({
           success: true,
-          data: evaluation,
-          message: "Simulation Mode: Using local evaluation engine."
+          data: {
+            nextQuestion,
+            evaluation: "Simulation Mode: Keyword-based progression.",
+            isCompleted
+          }
         });
       }
       throw aiErr;
     }
   } catch (error) {
-    console.error('Error evaluating answer:', error);
-    return res.status(500).json({ success: false, message: 'System error during evaluation.', error: error.message });
+    console.error('Error in chat interview:', error);
+    return res.status(500).json({ success: false, message: 'System error during interrogation.', error: error.message });
   }
 };
 
 module.exports = {
   generateQuestions,
   evaluateAnswer,
-  generateStructuredQuestions
+  generateStructuredQuestions,
+  chatInterview
 };

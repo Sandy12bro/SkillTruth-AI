@@ -16,22 +16,18 @@ const FALLBACK_QUESTIONS = [
 ];
 
 const Interview = () => {
-  const location = useLocation();
   const navigate = useNavigate();
   const { flowState, updateFlowState } = useFlow();
-  const resultData = flowState.analysisData || {}; // Use global flow state data
+  const resumeData = flowState.analysisData || {};
 
-  const [questions, setQuestions] = useState([]);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [isTyping, setIsTyping] = useState(true); // default to true while generating questions
-  const [questionIndex, setQuestionIndex] = useState(0);
+  const [isTyping, setIsTyping] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(true);
 
   const messagesEndRef = useRef(null);
 
-  // Auto-scroll to bottom of chat
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -40,104 +36,99 @@ const Interview = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  // 1. Fetch Dynamic Questions on Mount
+  /**
+   * 1. Initialize Interview with the first dynamic question
+   */
   useEffect(() => {
     let mounted = true;
-    const fetchQuestions = async () => {
+    const startInterview = async () => {
       try {
-        const res = await axios.post(`${API_BASE_URL}/api/interview/generate`, {
-          skills: resultData.skills || ['React', 'Node.js'],
-          projects: resultData.projects || []
+        const res = await axios.post(`${API_BASE_URL}/api/interview/chat`, {
+          history: [],
+          resumeData: resumeData
         });
+        
         if (mounted) {
-          const generated = res.data.data;
-          setQuestions(generated);
-          setMessages([{ id: Date.now(), text: generated[0], sender: 'ai' }]);
+          const { nextQuestion } = res.data.data;
+          setMessages([{ id: Date.now(), text: nextQuestion, sender: 'ai' }]);
           setIsGenerating(false);
           setIsTyping(false);
         }
       } catch (error) {
-        console.error("Failed to generate questions. Using fallback.", error);
+        console.error("Critical: Failed to start dynamic interview. Using fallback.", error);
         if (mounted) {
-          setQuestions(FALLBACK_QUESTIONS);
-          setMessages([{ id: Date.now(), text: FALLBACK_QUESTIONS[0], sender: 'ai' }]);
+          setMessages([{ id: Date.now(), text: "I'm the SkillTruth Lead Architect. Let's dig into your architecture. What is the most complex system you've built recently?", sender: 'ai' }]);
           setIsGenerating(false);
           setIsTyping(false);
         }
       }
     };
-    fetchQuestions();
+    startInterview();
     return () => { mounted = false; };
-  }, []);
+  }, [resumeData]);
 
+  /**
+   * 2. Handle Continuous Chat Loop
+   */
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim() || isTyping || isCompleted || isGenerating) return;
 
-    // 1. Add User Message
     const userText = inputValue.trim();
-    const currentQuestion = questions[questionIndex];
     const newUserMsg = { id: Date.now(), text: userText, sender: 'user' };
     
+    // Optimistically add user message
     setMessages(prev => [...prev, newUserMsg]);
     setInputValue('');
     setIsTyping(true);
 
     try {
-      // 2. Evaluate User Answer via API
-      const evalRes = await axios.post(`${API_BASE_URL}/api/interview/evaluate`, {
-        question: currentQuestion,
-        answer: userText
+      // Build history for the AI
+      const history = [...messages, newUserMsg].map(m => ({
+        sender: m.sender,
+        text: m.text
+      }));
+
+      const res = await axios.post(`${API_BASE_URL}/api/interview/chat`, {
+        history,
+        resumeData
       });
       
-      const evaluation = evalRes.data.data;
+      const { nextQuestion, isCompleted: done } = res.data.data;
       
-      // 3. Post AI Follow-up or Next Question
       setTimeout(() => {
         setIsTyping(false);
+        const aiMsg = { id: Date.now() + 1, text: nextQuestion, sender: 'ai' };
+        setMessages(prev => [...prev, aiMsg]);
         
-        // Add evaluation / transition message
-        const transitionMsg = { id: Date.now() + 1, text: evaluation.interviewerResponse, sender: 'ai' };
-        setMessages(prev => [...prev, transitionMsg]);
-
-        // Proceed to next question after short delay
-        setTimeout(() => {
-           const nextIndex = questionIndex + 1;
-          if (nextIndex < questions.length) {
-             const newAIMsg = { id: Date.now() + 2, text: questions[nextIndex], sender: 'ai' };
-             setMessages(prev => [...prev, newAIMsg]);
-             setQuestionIndex(nextIndex);
-           } else {
-             setIsCompleted(true);
-             updateFlowState({ interviewCompleted: true });
-           }
-        }, 1500);
-
-      }, 500);
+        if (done) {
+          setIsCompleted(true);
+          updateFlowState({ interviewCompleted: true });
+        }
+      }, 800);
 
     } catch (err) {
-      console.error(err);
-      // Fallback
+      console.error("Interrogation cycle failed:", err);
       setIsTyping(false);
-      const nextIndex = questionIndex + 1;
-      if (nextIndex < questions.length) {
-        setMessages(prev => [...prev, { id: Date.now() + 1, text: questions[nextIndex], sender: 'ai' }]);
-        setQuestionIndex(nextIndex);
-      } else {
-        setIsCompleted(true);
-        updateFlowState({ interviewCompleted: true });
-      }
+      // Hard fallback if cycle breaks
+      setMessages(prev => [...prev, { 
+        id: Date.now() + 1, 
+        text: "My neural link is flickering, but I've heard enough to finalize my report. Let's head to the dashboard.", 
+        sender: 'ai' 
+      }]);
+      setIsCompleted(true);
+      updateFlowState({ interviewCompleted: true });
     }
   };
 
-  const progressPercentage = questions.length > 0 ? (questionIndex / questions.length) * 100 : 0;
+  const progressPercentage = Math.min((messages.filter(m => m.sender === 'user').length / 5) * 100, 100);
 
   if (isGenerating) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh]">
         <Loader2 size={48} className="text-indigo-500 animate-spin mb-4" />
         <h2 className="text-2xl font-bold dark:text-white mb-2">Architecting Interview</h2>
-        <p className="text-slate-500 dark:text-slate-400">The AI is parsing your semantic traits to define custom logic sequences...</p>
+        <p className="text-slate-500 dark:text-slate-400">The AI is parsing your technical signals to define an adaptive hurdle...</p>
       </div>
     );
   }
@@ -152,15 +143,15 @@ const Interview = () => {
               <Bot className="text-indigo-600 dark:text-indigo-400" size={32} /> AI Interview
             </h1>
             <p className="text-slate-500 dark:text-slate-400 font-mono text-xs uppercase tracking-widest">
-              Phase: Behavioral Integrity
+              Status: Real-Time Technical Probing
             </p>
           </div>
           <div className="text-right">
             <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">
-              Progress
+              Proficiency Scan
             </span>
             <span className="text-lg font-black text-indigo-600 dark:text-indigo-400">
-              {Math.min(questionIndex + 1, questions.length)} / {questions.length}
+              {Math.floor(progressPercentage)}%
             </span>
           </div>
         </div>
