@@ -13,6 +13,7 @@ import History from './pages/History';
 import { Sun, Moon, LogOut } from 'lucide-react';
 import { useFlow } from './context/FlowContext';
 import { useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import ThemeToggle from './components/ui/ThemeToggle';
 
 
