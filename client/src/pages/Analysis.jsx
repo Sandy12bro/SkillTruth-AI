@@ -17,6 +17,17 @@ const AI_LOGS = [
 ];
 
 const Analysis = () => {
+  const navigate = useNavigate();
+  const { flowState, updateFlowState } = useFlow();
+  const resultData = flowState.analysisData;
+  const hasAnalysisData =
+    resultData &&
+    Array.isArray(resultData.skills) &&
+    Array.isArray(resultData.projects) &&
+    typeof resultData.experienceSummary === 'string' &&
+    Array.isArray(resultData.strengths) &&
+    Array.isArray(resultData.weaknesses);
+
   // Only show animation if we have data AND have not completed the analysis phase yet
   const [isAnalyzing, setIsAnalyzing] = useState(hasAnalysisData && !flowState.analysisCompleted);
   const [currentLogIndex, setCurrentLogIndex] = useState(0);
