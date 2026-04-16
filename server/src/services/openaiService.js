@@ -19,8 +19,9 @@ const sendPrompt = async (prompt) => {
 
     return response.choices[0].message.content;
   } catch (error) {
-    console.error('Error communicating with OpenAI:', error.message);
-    throw new Error('Failed to fetch response from OpenAI.');
+    const errorMsg = error.response?.data?.error?.message || error.message || 'Unknown OpenAI Error';
+    console.error('❌ OpenAI Service Error:', errorMsg);
+    throw new Error(`OpenAI Error: ${errorMsg}`);
   }
 };
 
