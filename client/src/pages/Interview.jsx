@@ -108,7 +108,10 @@ const Interview = () => {
         
         if (done) {
           setIsCompleted(true);
-          updateFlowState({ interviewCompleted: true });
+          updateFlowState({ 
+            interviewCompleted: true,
+            interviewTranscript: [...history, aiMsg] // Final full log
+          });
         }
       }, 800);
 
@@ -116,13 +119,17 @@ const Interview = () => {
       console.error("Interrogation cycle failed:", err);
       setIsTyping(false);
       // Hard fallback if cycle breaks
-      setMessages(prev => [...prev, { 
+      const crashMsg = { 
         id: Date.now() + 1, 
         text: "My neural link is flickering, but I've heard enough to finalize my report. Let's head to the dashboard.", 
         sender: 'ai' 
-      }]);
+      };
+      setMessages(prev => [...prev, crashMsg]);
       setIsCompleted(true);
-      updateFlowState({ interviewCompleted: true });
+      updateFlowState({ 
+        interviewCompleted: true,
+        interviewTranscript: [...messages, newUserMsg, crashMsg]
+      });
     }
   };
 
