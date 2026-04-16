@@ -67,12 +67,12 @@ const Home = () => {
               className="flex items-center justify-center"
             >
               <Button
-                variant="neon"
+                variant="animated"
                 onClick={() => navigate('/upload')}
-                className="group px-12 py-5 text-xl flex items-center gap-3 shadow-2xl shadow-indigo-500/30"
+                className="text-xl shadow-2xl shadow-indigo-500/30"
+                icon={ChevronRight}
               >
                 Scan Credentials Now
-                <ChevronRight className="group-hover:translate-x-1 transition-transform" />
               </Button>
             </motion.div>
         </div>
