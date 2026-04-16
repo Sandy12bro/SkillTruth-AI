@@ -16,7 +16,7 @@ app.use(express.json());
 
 // Basic Route
 app.get('/', (req, res) => {
-  res.send('SkillTruth AI Backend is running...');
+  res.send('API Running...');
 });
 
 // Routes Placeholder
@@ -30,6 +30,6 @@ app.use('/api/results', require('./routes/resultsRoutes'));
 //   .then(() => console.log('Connected to MongoDB'))
 //   .catch(err => console.error('MongoDB connection error:', err));
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(process.env.PORT || 5000, "0.0.0.0", () => {
+  console.log("Server running");
 });
