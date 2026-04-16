@@ -41,9 +41,9 @@ const Home = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1 }}
-              className="text-5xl md:text-[5.5rem] font-black mb-8 tracking-tighter text-slate-900 dark:text-white leading-[0.95]"
+              className="text-4xl sm:text-6xl md:text-[5.5rem] font-black mb-6 md:mb-8 tracking-tighter text-slate-900 dark:text-white leading-[1] md:leading-[0.95]"
             >
-              Your Resume Lies. <br />
+              Your Resume Lies. <br className="hidden sm:block" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500">
                 We Prove It.
               </span>
@@ -54,7 +54,7 @@ const Home = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.8 }}
-              className="text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-xl mx-auto mb-10 font-bold leading-relaxed"
+              className="text-base sm:text-lg md:text-xl text-slate-600 dark:text-slate-400 max-w-sm sm:max-w-xl mx-auto mb-10 font-bold leading-relaxed px-4"
             >
               The definitive truth engine for professional credentials. Detect discrepancies and verify authentic skills instantly.
             </motion.p>

@@ -55,22 +55,22 @@ const Dashboard = () => {
       className="p-4 sm:p-8 max-w-7xl mx-auto min-h-screen space-y-8"
     >
       {/* HEADER SECTION */}
-      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 dark:border-white/10 pb-8">
+      <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-slate-200 dark:border-white/10 pb-8 px-2 md:px-0">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <span className="px-2 py-1 bg-indigo-500 text-white text-[10px] font-black uppercase tracking-tighter rounded">Live Report</span>
             <span className="text-slate-400 dark:text-slate-500 font-mono text-[10px]">ID: AUDIT-{Math.floor(Math.random() * 90000) + 10000}</span>
           </div>
-          <h1 className="text-5xl font-black text-slate-900 dark:text-white tracking-tight">Neural Integrity Report</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Aggregated technical signals and interrogation analytics.</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Neural Integrity Report</h1>
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mt-2 font-medium">Aggregated technical signals and interrogation analytics.</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Audit Outcome</p>
-            <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400">VERIFIED</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Audit Outcome</p>
+            <p className="text-xl md:text-2xl font-black text-indigo-600 dark:text-indigo-400">VERIFIED</p>
           </div>
-          <div className="p-4 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-500/20">
-            <ShieldCheck size={32} />
+          <div className="p-3 md:p-4 bg-indigo-600 rounded-2xl text-white shadow-lg shadow-indigo-500/20">
+            <ShieldCheck size={28} />
           </div>
         </div>
       </header>
@@ -79,36 +79,36 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
         {/* BIG TRUTH SCORE CARD */}
         <motion.div variants={itemVariants} className="lg:col-span-4 h-full">
-          <Card className="h-full flex flex-col items-center justify-center p-8 bg-gradient-to-br from-white to-slate-50 dark:from-white/5 dark:to-white/[0.02] border-none shadow-2xl relative overflow-hidden">
+          <Card className="h-full flex flex-col items-center justify-center p-6 md:p-8 bg-gradient-to-br from-white to-slate-50 dark:from-white/5 dark:to-white/[0.02] border-none shadow-2xl relative overflow-hidden">
              <div className="absolute -top-10 -right-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl" />
-             <h2 className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-8">Mastery Quotient</h2>
+             <h2 className="text-[10px] md:text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em] mb-8 text-center">Mastery Quotient</h2>
              
-             <div className="relative w-56 h-56 flex items-center justify-center">
+             <div className="relative w-40 h-40 sm:w-56 sm:h-56 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="112" cy="112" r="90" fill="none" stroke="currentColor" strokeWidth="12" className="text-slate-100 dark:text-white/5" />
+                  <circle cx="50%" cy="50%" r="40%" fill="none" stroke="currentColor" strokeWidth="8" className="text-slate-100 dark:text-white/5" />
                   <motion.circle 
-                    cx="112" cy="112" r="90" fill="none" stroke="currentColor" strokeWidth="12" 
-                    strokeLinecap="round" strokeDasharray="565.48"
-                    initial={{ strokeDashoffset: 565.48 }}
-                    animate={{ strokeDashoffset: 565.48 - (565.48 * truthScore) / 100 }}
+                    cx="50%" cy="50%" r="40%" fill="none" stroke="currentColor" strokeWidth="8" 
+                    strokeLinecap="round" strokeDasharray="251"
+                    initial={{ strokeDashoffset: 251 }}
+                    animate={{ strokeDashoffset: 251 - (251 * truthScore) / 100 }}
                     transition={{ duration: 2, ease: "easeOut" }}
                     className="text-indigo-600 dark:text-indigo-500"
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center">
-                  <span className="text-6xl font-black text-slate-900 dark:text-white">{truthScore}%</span>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-2">Aggregate Truth</span>
+                  <span className="text-4xl sm:text-6xl font-black text-slate-900 dark:text-white">{truthScore}%</span>
+                  <span className="text-[8px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 sm:mt-2">Truth Signal</span>
                 </div>
              </div>
              
-             <div className="mt-8 grid grid-cols-2 gap-4 w-full">
-                <div className="p-3 bg-white dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase font-black">Signals</p>
-                  <p className="text-lg font-black dark:text-white">Active</p>
+             <div className="mt-8 grid grid-cols-2 gap-3 md:gap-4 w-full">
+                <div className="p-2 sm:p-3 bg-white dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5 text-center">
+                  <p className="text-[9px] text-slate-500 uppercase font-black">Signals</p>
+                  <p className="text-base sm:text-lg font-black dark:text-white">Active</p>
                 </div>
-                <div className="p-3 bg-white dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5 text-center">
-                  <p className="text-[10px] text-slate-500 uppercase font-black">Reliability</p>
-                  <p className="text-lg font-black text-emerald-500 font-mono">HIGH</p>
+                <div className="p-2 sm:p-3 bg-white dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5 text-center">
+                  <p className="text-[9px] text-slate-500 uppercase font-black">Reliability</p>
+                  <p className="text-base sm:text-lg font-black text-emerald-500 font-mono">HIGH</p>
                 </div>
              </div>
           </Card>
@@ -116,18 +116,18 @@ const Dashboard = () => {
 
         {/* COMPARISON CHART CARD */}
         <motion.div variants={itemVariants} className="lg:col-span-8 h-full">
-          <Card className="h-full p-8 overflow-hidden">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+          <Card className="h-full p-6 md:p-8 overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+              <h2 className="text-base md:text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <Zap size={20} className="text-amber-500" /> Integrity Gap Analysis
               </h2>
-              <div className="flex gap-4 text-[10px] font-bold uppercase tracking-widest">
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-white/10" /> Resume Claim</div>
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-indigo-500" /> Verified Signal</div>
+              <div className="flex gap-4 text-[9px] md:text-[10px] font-bold uppercase tracking-widest">
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-slate-200 dark:bg-white/10" /> Claimed</div>
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-indigo-500" /> Verified</div>
               </div>
             </div>
             
-            <div className="h-[280px]">
+            <div className="h-[250px] md:h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={integrityData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#94a3b8" strokeOpacity={0.1} />

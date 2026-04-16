@@ -19,37 +19,104 @@ import ThemeToggle from './components/ui/ThemeToggle';
 const Navigation = () => {
   const location = useLocation();
   const { resetFlow } = useFlow();
+  const [isOpen, setIsOpen] = React.useState(false);
   
   const getLinkClass = (path) => {
-    const base = "hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors";
+    const base = "hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300";
     return location.pathname === path 
-      ? `text-indigo-600 dark:text-indigo-400 font-bold ${base}`
+      ? `text-indigo-600 dark:text-indigo-400 font-black ${base}`
       : `text-slate-600 dark:text-slate-300 ${base}`;
   };
 
+  const navLinks = [
+    { name: 'Upload', path: '/upload' },
+    { name: 'Analysis', path: '/analysis' },
+    { name: 'Interview', path: '/interview' },
+    { name: 'Dashboard', path: '/dashboard' }
+  ];
+
   return (
-    <nav className="p-4 bg-white/80 dark:bg-[#0B0F19]/80 backdrop-blur-md sticky top-0 z-[60] border-b border-slate-200 dark:border-slate-800 flex justify-between items-center transition-all duration-300">
-      <Link to="/" className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-emerald-500">
-        SkillTruth AI
-      </Link>
-      <div className="flex items-center">
-        <div className="flex gap-8 text-sm font-semibold hidden lg:flex">
-          <Link to="/upload" className={getLinkClass('/upload')}>Upload</Link>
-          <Link to="/analysis" className={getLinkClass('/analysis')}>Analysis</Link>
-          <Link to="/interview" className={getLinkClass('/interview')}>Interview</Link>
-          <Link to="/dashboard" className={getLinkClass('/dashboard')}>Dashboard</Link>
+    <>
+      <nav className="p-4 bg-white/80 dark:bg-[#030712]/80 backdrop-blur-xl sticky top-0 z-[60] border-b border-slate-200/60 dark:border-white/5 flex justify-between items-center transition-all duration-300">
+        <Link to="/" className="text-xl md:text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-emerald-500">
+          SkillTruth AI
+        </Link>
+        
+        <div className="flex items-center gap-2">
+          {/* Desktop Links */}
+          <div className="hidden lg:flex gap-8 text-sm font-bold mr-6">
+            {navLinks.map(link => (
+              <Link key={link.path} to={link.path} className={getLinkClass(link.path)}>
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          <ThemeToggle />
+
+          <div className="h-6 w-px bg-slate-200 dark:bg-white/10 mx-2 hidden md:block" />
+          
+          <button 
+            onClick={() => { if(window.confirm('Reset current progress?')) resetFlow(); }}
+            className="p-2 text-slate-400 hover:text-rose-500 transition-colors hidden md:block"
+            title="Reset Flow"
+          >
+            <LogOut size={20} />
+          </button>
+
+          {/* Mobile Menu Toggle */}
+          <button 
+            onClick={() => setIsOpen(!isOpen)}
+            className="lg:hidden p-2 text-slate-600 dark:text-slate-300 active:scale-95 transition-transform"
+          >
+            {isOpen ? <LogOut size={24} className="rotate-90" /> : <div className="space-y-1.5 w-6">
+              <div className="h-0.5 w-full bg-current rounded-full" />
+              <div className="h-0.5 w-full bg-current rounded-full" />
+              <div className="h-0.5 w-2/3 bg-current rounded-full" />
+            </div>}
+          </button>
         </div>
-        <div className="h-6 w-px bg-slate-200 dark:bg-white/10 mx-4" />
-        <button 
-          onClick={() => { if(window.confirm('Reset current progress?')) resetFlow(); }}
-          className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
-          title="Reset Flow"
-        >
-          <LogOut size={20} />
-        </button>
-        <ThemeToggle />
-      </div>
-    </nav>
+      </nav>
+
+      {/* Mobile Slide-over Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-x-0 top-[73px] bottom-0 z-[55] bg-white/95 dark:bg-[#030712]/95 backdrop-blur-3xl lg:hidden p-8 flex flex-col items-center justify-center gap-8"
+          >
+            {navLinks.map((link, i) => (
+              <motion.div
+                key={link.path}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="w-full text-center"
+              >
+                <Link 
+                  to={link.path} 
+                  onClick={() => setIsOpen(false)}
+                  className={`text-3xl font-black ${location.pathname === link.path ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-600'}`}
+                >
+                  {link.name}
+                </Link>
+              </motion.div>
+            ))}
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              onClick={() => { resetFlow(); setIsOpen(false); }}
+              className="mt-8 px-8 py-3 bg-rose-500/10 text-rose-500 font-bold rounded-2xl flex items-center gap-2"
+            >
+              <LogOut size={20} /> Reset Session
+            </motion.button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

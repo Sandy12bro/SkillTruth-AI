@@ -146,7 +146,7 @@ const Interview = () => {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto h-[85vh] flex flex-col">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto h-[90vh] md:h-[85vh] flex flex-col">
       {/* Top: Header & Progress Bar */}
       <header className="mb-6 shrink-0">
         <div className="flex justify-between items-end mb-4">
