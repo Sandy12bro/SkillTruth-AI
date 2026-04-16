@@ -26,6 +26,7 @@ const Interview = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isGenerating, setIsGenerating] = useState(true);
 
+  const hasInitialized = useRef(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -38,8 +39,12 @@ const Interview = () => {
 
   /**
    * 1. Initialize Interview with the first dynamic question
+   * (Locked to run only once per mount)
    */
   useEffect(() => {
+    if (hasInitialized.current) return;
+    hasInitialized.current = true;
+
     let mounted = true;
     const startInterview = async () => {
       try {
@@ -57,7 +62,7 @@ const Interview = () => {
       } catch (error) {
         console.error("Critical: Failed to start dynamic interview. Using fallback.", error);
         if (mounted) {
-          setMessages([{ id: Date.now(), text: "I'm the SkillTruth Lead Architect. Let's dig into your architecture. What is the most complex system you've built recently?", sender: 'ai' }]);
+          setMessages([{ id: Date.now(), text: "I'm the SkillTruth Lead Architect. Let's dig into your technical core. What is the most complex logical sequence or architecture you've built recently?", sender: 'ai' }]);
           setIsGenerating(false);
           setIsTyping(false);
         }
@@ -65,7 +70,7 @@ const Interview = () => {
     };
     startInterview();
     return () => { mounted = false; };
-  }, [resumeData]);
+  }, []); // Run ONLY once on mount
 
   /**
    * 2. Handle Continuous Chat Loop

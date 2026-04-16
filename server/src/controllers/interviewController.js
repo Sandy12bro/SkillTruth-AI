@@ -204,19 +204,23 @@ const chatInterview = async (req, res) => {
       let nextQuestion = "";
       let isCompleted = false;
 
-      // Unbreakable Logic Tree
+      // Unbreakable Logic Tree with Varied Paths
       if (messageCount === 0) {
-        nextQuestion = `I've analyzed your expertise in ${skills[0]?.name || 'this technical landscape'}. Can you walk me through the most significant architectural hurdle you faced recently?`;
+        const pool = [
+          `I've analyzed your expertise in ${skills[0]?.name || 'this technical landscape'}. Can you walk me through the most significant architectural hurdle you faced recently?`,
+          `Welcome to the technical deep-dive. Regarding your proficiency in ${skills[0]?.name || 'software engineering'}, what is the most complex logic block you've designed lately?`
+        ];
+        nextQuestion = pool[Math.floor(Date.now() % 2)];
       } else if (messageCount === 1) {
-        nextQuestion = `Regarding "${projects[0]?.name || 'your core projects'}", how did you ensure system integrity and data consistency? Give me technical specifics.`;
+        nextQuestion = `Regarding "${projects[0]?.name || 'your core projects'}", how did you ensure system integrity and data consistency during high-load scenarios?`;
       } else if (messageCount === 2) {
-        nextQuestion = `Let's pivot to logic. If you had to refactor a performance bottleneck in ${skills[1]?.name || 'your primary stack'}, what would be your first optimization step?`;
+        nextQuestion = `Let's pivot to logic. If you had to refactor a performance bottleneck or a memory leak in ${skills[1]?.name || 'your primary stack'}, what would be your diagnostic process?`;
       } else if (messageCount === 3) {
-        nextQuestion = `Technical Depth Check: How would you scale this architecture to support a high-concurrency event? What component breaks first?`;
+        nextQuestion = `Technical Depth Check: How would you scale this architecture to support 10x the traffic? Which component would you replace first?`;
       } else if (messageCount === 4) {
-        nextQuestion = `Almost there. Tell me about a time you had to integrate a complex third-party API. How did you handle failures or rate limits?`;
+        nextQuestion = `Almost finished. Talk to me about your strategy for handling third-party API failures. How do you implement robust circuit breaking?`;
       } else {
-        nextQuestion = "Thank you for the rigorous technical exchange. Our session is complete, and I've compiled your proficiency report.";
+        nextQuestion = "Our technical exchange has reached its conclusion. I have enough signals to finalize your proficiency report. Proceeding to final results.";
         isCompleted = true;
       }
 
@@ -224,7 +228,7 @@ const chatInterview = async (req, res) => {
         success: true,
         data: {
           nextQuestion,
-          evaluation: "Neural Simulation Mode: Adaptive technical pathing.",
+          evaluation: "Neural Simulation Mode: Diversified technical pathing.",
           isCompleted
         }
       });
