@@ -106,21 +106,49 @@ cd server
 npm install
 ```
 
-#### 3️⃣ Configure The Secrets
+#### 3° Configure The Secrets
 Create a `.env` file with these keys:
 ```env
-🔧 PORT=5000
-🔧 NODE_ENV=development
-🔧 MONGODB_URI=mongodb://localhost:27017/skilltruth-ai
-🔧 JWT_SECRET=your_jwt_secret_key_here
-🔧 JWT_EXPIRE=7d
-🔧 OPENAI_API_KEY=sk-proj-your_openai_api_key_here
-🔧 OPENAI_MODEL=gpt-4o-mini
-🔧 FIREBASE_PROJECT_ID=your_firebase_project_id
-🔧 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour_firebase_private_key_here\n-----END PRIVATE KEY-----\n"
-🔧 FIREBASE_CLIENT_EMAIL=your_firebase_client_email
-🔧 FIREBASE_CLIENT_ID=your_firebase_client_id
-🔧 FRONTEND_URL=http://localhost:5174
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# Database Configuration
+MONGODB_URI=mongodb://localhost:27017/skilltruth-ai
+
+# JWT Configuration
+JWT_SECRET=your_jwt_secret_key_here
+JWT_EXPIRE=7d
+
+# Firebase Configuration
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_PRIVATE_KEY_ID=your_firebase_private_key_id
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nyour_firebase_private_key_here\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL=your_firebase_client_email
+FIREBASE_CLIENT_ID=your_firebase_client_id
+FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
+FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
+
+# OpenAI Configuration
+OPENAI_API_KEY=sk-proj-your_openai_api_key_here
+OPENAI_MODEL=gpt-4o-mini
+
+# Email Configuration (Optional)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_email_password
+
+# File Upload Configuration
+MAX_FILE_SIZE=10485760
+UPLOAD_PATH=./uploads
+
+# CORS Configuration
+FRONTEND_URL=http://localhost:5174
+
+# Additional Configuration
+VITE_API_URL=http://localhost:5000
+VERCEL_URL=https://skilltruth-ai.vercel.app
 ```
 
 #### 4️⃣ Launch The Backend
@@ -146,17 +174,29 @@ Open `http://localhost:5174` and upload a resume to see the magic ✨
 
 | Variable | What It Does | Default | Required? |
 |----------|---------------|----------|-----------|
-| `PORT` | Server port number | 5000 | 🚫 No |
-| `NODE_ENV` | Development mode | development | 🚫 No |
-| `MONGODB_URI` | Database connection | mongodb://localhost:27017/skilltruth-ai | ✅ Yes |
-| `JWT_SECRET` | Security token secret | - | ✅ Yes |
-| `JWT_EXPIRE` | Token expiration | 7d | 🚫 No |
-| `OPENAI_API_KEY` | AI brain access | - | ✅ Yes |
-| `OPENAI_MODEL` | AI model to use | gpt-4o-mini | 🚫 No |
-| `FIREBASE_PROJECT_ID` | Firebase project | - | ✅ Yes |
-| `FIREBASE_PRIVATE_KEY` | Firebase auth key | - | ✅ Yes |
-| `FIREBASE_CLIENT_EMAIL` | Firebase email | - | ✅ Yes |
-| `FRONTEND_URL` | Frontend URL | http://localhost:5174 | 🚫 No |
+| `PORT` | Server port number | 5000 | No |
+| `NODE_ENV` | Development mode | development | No |
+| `MONGODB_URI` | Database connection | mongodb://localhost:27017/skilltruth-ai | Yes |
+| `JWT_SECRET` | Security token secret | - | Yes |
+| `JWT_EXPIRE` | Token expiration | 7d | No |
+| `OPENAI_API_KEY` | AI brain access | - | Yes |
+| `OPENAI_MODEL` | AI model to use | gpt-4o-mini | No |
+| `FIREBASE_PROJECT_ID` | Firebase project | - | Yes |
+| `FIREBASE_PRIVATE_KEY_ID` | Firebase private key ID | - | Yes |
+| `FIREBASE_PRIVATE_KEY` | Firebase auth key | - | Yes |
+| `FIREBASE_CLIENT_EMAIL` | Firebase email | - | Yes |
+| `FIREBASE_CLIENT_ID` | Firebase client ID | - | Yes |
+| `FIREBASE_AUTH_URI` | Firebase auth URL | https://accounts.google.com/o/oauth2/auth | No |
+| `FIREBASE_TOKEN_URI` | Firebase token URL | https://oauth2.googleapis.com/token | No |
+| `EMAIL_HOST` | Email server host | smtp.gmail.com | No |
+| `EMAIL_PORT` | Email server port | 587 | No |
+| `EMAIL_USER` | Email username | - | No |
+| `EMAIL_PASS` | Email password | - | No |
+| `MAX_FILE_SIZE` | Max upload file size (bytes) | 10485760 | No |
+| `UPLOAD_PATH` | File upload directory | ./uploads | No |
+| `FRONTEND_URL` | Frontend URL for CORS | http://localhost:5174 | No |
+| `VITE_API_URL` | Vite API URL | http://localhost:5000 | No |
+| `VERCEL_URL` | Vercel deployment URL | https://skilltruth-ai.vercel.app | No |
 
 ---
 

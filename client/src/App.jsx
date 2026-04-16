@@ -13,20 +13,8 @@ import History from './pages/History';
 import { Sun, Moon, LogOut } from 'lucide-react';
 import { useFlow } from './context/FlowContext';
 import { useEffect, useRef } from 'react';
+import ThemeToggle from './components/ui/ThemeToggle';
 
-const ThemeToggle = () => {
-  const { theme, toggleTheme } = useTheme();
-
-  return (
-    <button 
-      onClick={toggleTheme}
-      className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors duration-300 ml-4 flex items-center justify-center text-slate-700 dark:text-slate-300"
-      aria-label="Toggle Theme"
-    >
-      {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-    </button>
-  );
-};
 
 const Navigation = () => {
   const location = useLocation();

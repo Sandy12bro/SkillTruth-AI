@@ -73,30 +73,48 @@ const analyzeResume = async (req, res) => {
       });
     }
 
-    console.log("🔥 FORCE TEST RUN - Bypassing OpenAI");
+    console.log("🔥 CALLING AI FOR REAL-TIME ANALYSIS");
 
-    const forceData = {
-      skills: [
-        { name: "React", level: "Intermediate", confidence: 80 },
-        { name: "Node.js", level: "Intermediate", confidence: 75 },
-        { name: "OpenAI Integration", level: "Advanced", confidence: 95 }
-      ],
-      projects: [
-        {
-          name: "SkillTruth AI (FORCE TEST)",
-          description: "This is hardcoded data to verify the frontend pipeline is working correctly. If you see this, the AI integration is your broken link.",
-          technologies: ["React", "Node", "OpenAI"],
-          complexity: "High"
-        }
-      ],
-      experienceSummary: "Full-stack developer with AI experience - Verified via Force Test Bypass.",
-      strengths: ["Clean Architecture", "Precision Logic", "Diagnostic Thinking"],
-      weaknesses: ["AI Pipeline Instability (Currently Investigating)"]
-    };
+    const prompt = `
+      You are an expert technical recruiter and AI integrity engine. 
+      Analyze the following resume text and provide a structured JSON response. 
+      
+      BE CRITICAL: Identify actual skill levels (Beginner, Intermediate, Advanced) based on project complexity and tenure.
+      
+      Text: "${text.substring(0, 15000)}"
+
+      Response MUST be in this EXACT JSON format:
+      {
+        "skills": [
+          { "name": "Skill Name", "level": "Advanced|Intermediate|Beginner", "confidence": 0-100 }
+        ],
+        "projects": [
+          { "name": "Project Name", "description": "Short bio", "technologies": ["Tech"], "complexity": "High|Medium|Low" }
+        ],
+        "experienceSummary": "One sentence summary of their professional path.",
+        "strengths": ["Strength 1", "Strength 2"],
+        "weaknesses": ["Area to verify 1", "Area to verify 2"]
+      }
+
+      Return ONLY the JSON object. No markdown, no prose.
+    `;
+
+    const aiRes = await sendPrompt(prompt);
+    
+    // Clean markdown code blocks if present
+    const cleanJson = aiRes.replace(/```json|```|``json|``/g, "").trim();
+    
+    let parsedData;
+    try {
+      parsedData = JSON.parse(cleanJson);
+    } catch (parseErr) {
+      console.error("Failed to parse AI response:", aiRes);
+      throw new Error("AI returned an invalid data structure.");
+    }
 
     return res.json({
       success: true,
-      data: forceData
+      data: parsedData
     });
 
   } catch (error) {

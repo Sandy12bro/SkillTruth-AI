@@ -12,11 +12,17 @@
 }
 
 @layer components {
-  /* Sophisticated Card Styling */
+  /* Sophisticated Intelligence Card Styling */
   .glass-card {
-    /* Light Mode: Crisp white, delicate border, airy shadow */
-    /* Dark Mode: Translucent black, very subtle border, deep shadow */
-    @apply bg-white dark:bg-white/[0.02] border border-slate-200/60 dark:border-white/[0.08] shadow-xl shadow-slate-200/50 dark:shadow-2xl dark:shadow-black/80 backdrop-blur-xl transition-all duration-300;
+    @apply bg-white/90 dark:bg-black/40 border border-slate-200/60 dark:border-white/[0.08] shadow-[0_20px_50px_-16px_rgba(0,0,0,0.15)] dark:shadow-[0_25px_60px_-16px_rgba(0,0,0,0.8)] backdrop-blur-2xl transition-all duration-500 ease-out;
+  }
+
+  .glass-card:hover {
+    @apply shadow-[0_30px_70px_-16px_rgba(99,102,241,0.2)] dark:shadow-[0_30px_80px_-16px_rgba(0,0,0,1)] -translate-y-1.5 border-indigo-500/30;
+  }
+
+  .intelligence-header {
+    @apply text-xl font-black mb-6 flex items-center gap-3 tracking-tight text-slate-900 dark:text-white;
   }
 
   .neon-border {

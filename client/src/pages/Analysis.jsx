@@ -169,7 +169,7 @@ const Analysis = () => {
               {/* Skills Section */}
               <div className="lg:col-span-1 space-y-6">
                 <Card className="h-full">
-                  <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
+                  <h3 className="intelligence-header">
                     <Zap className="text-amber-500" />
                     Skill Levels
                   </h3>
@@ -223,22 +223,22 @@ const Analysis = () => {
                     </Card>
                   ))}
                   {!resultData?.projects?.length && (
-                    <Card className="flex items-center justify-center p-8 border-dashed">
+                    <Card className="flex items-center justify-center p-8 border-dashed border-slate-300 dark:border-white/10">
                       <p className="text-xs text-slate-500 italic">No project data available.</p>
                     </Card>
                   )}
                 </div>
 
-                <Card className="bg-slate-900 border-none text-white relative overflow-hidden">
-                  <div className="absolute top-0 right-0 p-8 opacity-10">
+                <Card className="bg-indigo-600 dark:bg-indigo-600/20 text-white border-none relative overflow-hidden group shadow-indigo-500/20">
+                  <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
                     <ShieldCheck size={120} />
                   </div>
                   <div className="relative z-10">
-                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                    <h3 className="intelligence-header !text-white">
                       <ShieldCheck className="text-emerald-400" />
                       Experience Summary
                     </h3>
-                    <p className="text-sm text-slate-300 leading-relaxed italic">
+                    <p className="text-sm text-indigo-50 leading-relaxed italic">
                       "{resultData?.experienceSummary}"
                     </p>
                   </div>
@@ -246,31 +246,31 @@ const Analysis = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-              <Card className="border-l-4 border-emerald-500">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                   <TrendingUp className="text-emerald-500" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              <Card className="!bg-emerald-500/5 border-emerald-500/20">
+                <h3 className="intelligence-header !text-emerald-600 dark:!text-emerald-400">
+                   <TrendingUp />
                    Identified Strengths
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {resultData?.strengths?.map((s, i) => (
-                    <li key={i} className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <li key={i} className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                       {s}
                     </li>
                   ))}
                 </ul>
               </Card>
 
-              <Card className="border-l-4 border-rose-500">
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                   <AlertTriangle className="text-rose-500" />
+              <Card className="!bg-rose-500/5 border-rose-500/20">
+                <h3 className="intelligence-header !text-rose-600 dark:!text-rose-400">
+                   <AlertTriangle />
                    Areas to Verify
                 </h3>
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {resultData?.weaknesses?.map((w, i) => (
-                    <li key={i} className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                    <li key={i} className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]" />
                       {w}
                     </li>
                   ))}
@@ -278,14 +278,14 @@ const Analysis = () => {
               </Card>
             </div>
 
-            <div className="flex justify-center pt-4">
+            <div className="flex justify-center">
               <Button 
-                variant="neon" 
+                variant="animated" 
                 onClick={() => navigate('/interview')}
-                className="group px-10 py-4 flex items-center gap-2"
+                className="text-lg px-12 py-5"
+                icon={ChevronRight}
               >
                 Proceed to Intelligence Interview
-                <ChevronRight className="group-hover:translate-x-1 transition-transform" />
               </Button>
             </div>
           </motion.div>
