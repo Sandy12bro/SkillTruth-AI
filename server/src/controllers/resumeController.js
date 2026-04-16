@@ -74,7 +74,14 @@ const analyzeResume = async (req, res) => {
     }
 
     console.log("🔥 CALLING AI FOR REAL-TIME ANALYSIS");
-    console.log(`Text Sample: ${text.substring(0, 100)}...`);
+    console.log(`Key State: ${!!process.env.OPENAI_API_KEY ? 'DEFINED' : 'MISSING'}`);
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({
+        success: false,
+        message: "Server Configuration Error: OpenAI API Key is missing."
+      });
+    }
 
     const prompt = `
       You are an expert technical recruiter and AI integrity engine. 
@@ -82,7 +89,7 @@ const analyzeResume = async (req, res) => {
       
       BE CRITICAL: Identify actual skill levels (Beginner, Intermediate, Advanced) based on project complexity and tenure.
       
-      Text: "${text.replace(/"/g, "'").substring(0, 15000)}"
+      Text: "${text.replace(/"/g, "'").substring(0, 10000)}"
 
       Response MUST be in this EXACT JSON format:
       {
@@ -100,42 +107,41 @@ const analyzeResume = async (req, res) => {
       Return ONLY the JSON object. No markdown, no prose.
     `;
 
-    const aiRes = await sendPrompt(prompt);
-    console.log("🤖 RAW AI RESPONSE RECEIVED:", aiRes.substring(0, 200) + "...");
-    
-    // Improved JSON cleaning: find the first '{' and last '}'
-    let cleanJson = aiRes;
-    const firstBrace = aiRes.indexOf('{');
-    const lastBrace = aiRes.lastIndexOf('}');
-    
-    if (firstBrace !== -1 && lastBrace !== -1) {
-      cleanJson = aiRes.substring(firstBrace, lastBrace + 1);
-    }
-
-    // Secondary clean for markdown blocks
-    cleanJson = cleanJson.replace(/```json|```|``json|``|`/g, "").trim();
-    
-    let parsedData;
     try {
-      parsedData = JSON.parse(cleanJson);
-      console.log("✅ JSON PARSED SUCCESSFULLY");
-    } catch (parseErr) {
-      console.error("❌ JSON PARSE FAILED");
-      console.error("Problematic AI output:", aiRes);
-      throw new Error(`AI data structural error: ${parseErr.message}`);
-    }
+      const aiRes = await sendPrompt(prompt);
+      console.log("🤖 RAW AI RESPONSE RECEIVED:", aiRes.substring(0, 150) + "...");
+      
+      let cleanJson = aiRes;
+      const firstBrace = aiRes.indexOf('{');
+      const lastBrace = aiRes.lastIndexOf('}');
+      
+      if (firstBrace !== -1 && lastBrace !== -1) {
+        cleanJson = aiRes.substring(firstBrace, lastBrace + 1);
+      }
 
-    return res.json({
-      success: true,
-      data: parsedData
-    });
+      cleanJson = cleanJson.replace(/```json|```|``json|``|`/g, "").trim();
+      
+      const parsedData = JSON.parse(cleanJson);
+      process.stdout.write("✅ ANALYTICS PARSED SUCCESSFULLY\n");
+
+      return res.json({
+        success: true,
+        data: parsedData
+      });
+
+    } catch (aiErr) {
+      console.error("❌ AI EXCEPTION:", aiErr.message);
+      return res.status(500).json({
+        success: false,
+        message: `Intelligence Engine Error: ${aiErr.message}`
+      });
+    }
 
   } catch (error) {
     console.error("❌ Critical Analysis Error:", error);
     res.status(500).json({
       success: false,
-      message: "An internal error occurred during analysis.",
-      error: error.message
+      message: `System Error: ${error.message}`
     });
   }
 };

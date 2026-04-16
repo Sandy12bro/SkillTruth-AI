@@ -1,5 +1,5 @@
-require('dotenv').config();
-const { sendPrompt } = require('./server/src/services/openaiService');
+require('dotenv').config({ path: '../.env' });
+const { sendPrompt } = require('./src/services/openaiService');
 
 async function test() {
   console.log("Testing OpenAI connection with key:", process.env.OPENAI_API_KEY?.substring(0, 10) + "...");
