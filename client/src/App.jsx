@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { FlowProvider } from './context/FlowContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -12,7 +12,6 @@ import Dashboard from './pages/Dashboard';
 import History from './pages/History';
 import { Sun, Moon, LogOut } from 'lucide-react';
 import { useFlow } from './context/FlowContext';
-import { trailingCursor, followingDotCursor } from 'cursor-effects';
 import { useEffect, useRef } from 'react';
 
 const ThemeToggle = () => {
@@ -76,6 +75,8 @@ const CursorEffects = () => {
   const instances = useRef({ tCursor: null, fDot: null });
 
   useEffect(() => {
+    let isMounted = true;
+
     const cleanup = () => {
       try {
         if (instances.current.tCursor?.destroy) instances.current.tCursor.destroy();
@@ -96,21 +97,30 @@ const CursorEffects = () => {
     // Short delay to let the DOM settle after theme change
     const timer = setTimeout(() => {
       try {
-        instances.current.tCursor = new trailingCursor({
-          particles: 15,
-          rate: 0.8,
-          baseImageSrc: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAuSURBVBgZpcixDQAADMAwTP//vL+uC60vESmShD4UInmOq7uXqLru7r57iaq7i6g6pS0YAdD2fWAAAAAASUVORK5CYII=",
-        });
+        import('cursor-effects')
+          .then(({ trailingCursor, followingDotCursor }) => {
+            if (!isMounted) return;
 
-        instances.current.fDot = new followingDotCursor({ 
-          color: [dotColor] 
-        });
+            instances.current.tCursor = new trailingCursor({
+              particles: 15,
+              rate: 0.8,
+              baseImageSrc: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAuSURBVBgZpcixDQAADMAwTP//vL+uC60vESmShD4UInmOq7uXqLru7r57iaq7i6g6pS0YAdD2fWAAAAAASUVORK5CYII=",
+            });
+
+            instances.current.fDot = new followingDotCursor({
+              color: [dotColor]
+            });
+          })
+          .catch((err) => {
+            console.warn("Cursor effects unavailable:", err);
+          });
       } catch (err) {
         console.warn("Failed to init cursor:", err);
       }
     }, 150);
 
     return () => {
+      isMounted = false;
       clearTimeout(timer);
       cleanup();
     };
