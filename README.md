@@ -1,4 +1,4 @@
-# 🚀 SkillTruth AI
+# 🚀 SkillTruth AI [Updated Intelligence Config]
 
 <div align="center">
   <h3>🎯 Your Resume Lies. We Prove It.</h3>
