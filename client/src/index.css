@@ -31,10 +31,10 @@
 
   /* Cinematic Animated Button Styling */
   .animated-cta-button {
-    @apply bg-indigo-600 dark:bg-indigo-500 text-white font-bold tracking-wide relative flex items-center overflow-hidden transition-all duration-300 shadow-lg shadow-indigo-600/20 active:scale-95 cursor-pointer;
-    padding: 0.75rem 3.5rem 0.75rem 1.5rem;
-    border-radius: 1rem;
-    height: 3.5rem;
+    @apply bg-indigo-600 dark:bg-indigo-500 text-white font-bold tracking-wide relative flex items-center overflow-hidden transition-all duration-300 shadow-lg shadow-indigo-600/20 active:scale-95 cursor-pointer whitespace-nowrap;
+    padding: 0.75rem 4rem 0.75rem 2rem;
+    border-radius: 1.25rem;
+    height: 4rem;
     border: none;
   }
 

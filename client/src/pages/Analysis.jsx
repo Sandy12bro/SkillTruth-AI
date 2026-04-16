@@ -282,10 +282,10 @@ const Analysis = () => {
               <Button 
                 variant="animated" 
                 onClick={() => navigate('/interview')}
-                className="text-base md:text-lg px-8 md:px-12 py-4 md:py-5"
+                className="text-base md:text-lg mb-8"
                 icon={ChevronRight}
               >
-                Proceed to Intelligence Interview
+                Proceed to Interview
               </Button>
             </div>
           </motion.div>
