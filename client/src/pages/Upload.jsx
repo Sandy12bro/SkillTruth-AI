@@ -132,7 +132,9 @@ const Upload = () => {
         updateFlowState({ 
           resumeUploaded: true, 
           analysisData: structuredData,
-          analysisCompleted: false
+          analysisCompleted: false,
+          interviewCompleted: false,
+          interviewTranscript: [] // Clear old logs
         });
 
         console.log("🚀 MAPPING SUCCESS - Transitioning to /analysis");

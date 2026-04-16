@@ -204,19 +204,28 @@ const chatInterview = async (req, res) => {
       let nextQuestion = "";
       let isCompleted = false;
 
-      // Unbreakable Logic Tree with Varied Paths
+      // Unbreakable Logic Tree with Varied Paths and Focus Skills
       if (messageCount === 0) {
-        const pool = [
-          `I've analyzed your expertise in ${skills[0]?.name || 'this technical landscape'}. Can you walk me through the most significant architectural hurdle you faced recently?`,
-          `Welcome to the technical deep-dive. Regarding your proficiency in ${skills[0]?.name || 'software engineering'}, what is the most complex logic block you've designed lately?`
+        // Pick a random skill from top 3 for variety
+        const topSkills = skills.slice(0, 3);
+        const focusSkill = topSkills[Math.floor(Math.random() * topSkills.length)]?.name || 'modern software engineering';
+        
+        const openingPool = [
+          `I've analyzed your expertise in ${focusSkill}. Can you walk me through the most significant architectural hurdle you faced recently while building with it?`,
+          `Welcome to the technical deep-dive. Regarding your proficiency in ${focusSkill}, what is the most complex logic block you've designed lately?`,
+          `Let's start with your core strength: ${focusSkill}. How do you typically handle debugging or optimization within this ecosystem?`
         ];
-        nextQuestion = pool[Math.floor(Date.now() % 2)];
+        nextQuestion = openingPool[Math.floor(Math.random() * openingPool.length)];
       } else if (messageCount === 1) {
-        nextQuestion = `Regarding "${projects[0]?.name || 'your core projects'}", how did you ensure system integrity and data consistency during high-load scenarios?`;
+        const projectPool = [
+          `Regarding "${projects[0]?.name || 'your core projects'}", how did you ensure system integrity and data consistency during high-load scenarios?`,
+          `Looking at the architecture of "${projects[0]?.name || 'your primary case'}", what would you say was the most risky technical debt you encountered?`
+        ];
+        nextQuestion = projectPool[Math.floor(Math.random() * projectPool.length)];
       } else if (messageCount === 2) {
-        nextQuestion = `Let's pivot to logic. If you had to refactor a performance bottleneck or a memory leak in ${skills[1]?.name || 'your primary stack'}, what would be your diagnostic process?`;
+        nextQuestion = `Let's pivot to code. If you had to refactor a performance bottleneck or a memory leak in ${skills[1]?.name || 'your primary stack'}, what would be your diagnostic process?`;
       } else if (messageCount === 3) {
-        nextQuestion = `Technical Depth Check: How would you scale this architecture to support 10x the traffic? Which component would you replace first?`;
+        nextQuestion = `Technical Depth Check: How would you scale this architecture to support 10x the current traffic? Which component would you replace first?`;
       } else if (messageCount === 4) {
         nextQuestion = `Almost finished. Talk to me about your strategy for handling third-party API failures. How do you implement robust circuit breaking?`;
       } else {
