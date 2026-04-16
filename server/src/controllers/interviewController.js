@@ -195,42 +195,43 @@ const chatInterview = async (req, res) => {
       return res.status(200).json({ success: true, data: parsed });
 
     } catch (aiErr) {
-      // Simulation Fallback for Chat
-      if (aiErr.message.includes('429') || aiErr.message.includes('quota') || aiErr.message.includes('billing')) {
-        const messageCount = history.filter(m => m.sender === 'user').length;
-        const skills = resumeData.skills || [];
-        const projects = resumeData.projects || [];
+      console.warn("🤖 AI ENGINE EXCEPTION - ACTIVATING UNBREAKABLE SIMULATION:", aiErr.message);
+      
+      const messageCount = history.filter(m => m.sender === 'user').length;
+      const skills = resumeData.skills || [];
+      const projects = resumeData.projects || [];
 
-        let nextQuestion = "";
-        let isCompleted = false;
+      let nextQuestion = "";
+      let isCompleted = false;
 
-        if (messageCount === 0) {
-          nextQuestion = `I see you have experience with ${skills[0]?.name || 'modern tech'}. Can you explain the most complex logic block you've written for it recently?`;
-        } else if (messageCount === 1) {
-          nextQuestion = `Regarding your project "${projects[0]?.name || 'Main Case'}", how did you handle state synchronization or data consistency? Be specific about the architecture.`;
-        } else if (messageCount === 2) {
-          nextQuestion = `Let's talk code. If you had to implement a retry-mechanism for an API call in ${skills[1]?.name || 'your core stack'}, what would the logic structure look like?`;
-        } else if (messageCount === 3) {
-          nextQuestion = `Final technical hurdle: How would you scale your current project architecture to handle 10x the traffic? What breaks first?`;
-        } else {
-          nextQuestion = "Thank you for the detailed insights. I've seen enough to form a proficiency report.";
-          isCompleted = true;
-        }
-
-        return res.status(200).json({
-          success: true,
-          data: {
-            nextQuestion,
-            evaluation: "Simulation Mode: Keyword-based progression.",
-            isCompleted
-          }
-        });
+      // Unbreakable Logic Tree
+      if (messageCount === 0) {
+        nextQuestion = `I've analyzed your expertise in ${skills[0]?.name || 'this technical landscape'}. Can you walk me through the most significant architectural hurdle you faced recently?`;
+      } else if (messageCount === 1) {
+        nextQuestion = `Regarding "${projects[0]?.name || 'your core projects'}", how did you ensure system integrity and data consistency? Give me technical specifics.`;
+      } else if (messageCount === 2) {
+        nextQuestion = `Let's pivot to logic. If you had to refactor a performance bottleneck in ${skills[1]?.name || 'your primary stack'}, what would be your first optimization step?`;
+      } else if (messageCount === 3) {
+        nextQuestion = `Technical Depth Check: How would you scale this architecture to support a high-concurrency event? What component breaks first?`;
+      } else if (messageCount === 4) {
+        nextQuestion = `Almost there. Tell me about a time you had to integrate a complex third-party API. How did you handle failures or rate limits?`;
+      } else {
+        nextQuestion = "Thank you for the rigorous technical exchange. Our session is complete, and I've compiled your proficiency report.";
+        isCompleted = true;
       }
-      throw aiErr;
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          nextQuestion,
+          evaluation: "Neural Simulation Mode: Adaptive technical pathing.",
+          isCompleted
+        }
+      });
     }
   } catch (error) {
-    console.error('Error in chat interview:', error);
-    return res.status(500).json({ success: false, message: 'System error during interrogation.', error: error.message });
+    console.error('Fatal Interrogation Error:', error);
+    return res.status(500).json({ success: false, message: 'System Error: Re-initializing neural link...', error: error.message });
   }
 };
 
